@@ -183,16 +183,22 @@
   .btn-play { background: #ffd369; color: #1a1a2e; }
   .btn-play:hover { background: #ffc107; }
 
+  /* 手寫區：加大 + 依字元數動態調整 */
   .write-wrap {
     position: relative;
     width: 100%;
     aspect-ratio: 1 / 1;
-    max-width: 320px;
+    max-width: 400px;   /* 從 320 加大到 400 */
     margin: 0 auto 14px;
     background: rgba(255,255,255,0.04);
     border-radius: 20px;
     border: 2px dashed rgba(255,255,255,0.15);
     overflow: hidden;
+    transition: max-width 0.2s;
+  }
+  .write-wrap.wide {
+    max-width: 100%;    /* 拗音時放大到全寬 */
+    aspect-ratio: 1.3 / 1; /* 稍微拉寬，讓兩個字元更好寫 */
   }
   .write-wrap canvas {
     position: absolute;
@@ -343,7 +349,7 @@
   }
   .hidden { display: none; }
 
-  /* ====== 發音表 ====== */
+  /* 發音表 */
   .table-tabs {
     display: flex;
     gap: 6px;
@@ -429,13 +435,6 @@
     white-space: nowrap;
     padding-right: 4px;
   }
-  .table-section-title {
-    font-size: 0.8rem;
-    color: #ffd369;
-    font-weight: bold;
-    margin: 14px 0 8px;
-    padding-left: 4px;
-  }
   .table-hint {
     text-align: center;
     font-size: 0.7rem;
@@ -445,6 +444,8 @@
   @media (max-width: 400px) {
     .kana { font-size: 3.8rem; }
     .kana-table .cell-kana { font-size: 1.15rem; }
+    .write-wrap { max-width: 320px; }
+    .write-wrap.wide { max-width: 100%; aspect-ratio: 1.2 / 1; }
   }
 </style>
 </head>
@@ -497,7 +498,7 @@
   <!-- 手寫模式 -->
   <div id="writePanel" class="hidden">
     <div class="progress" id="writeProgress">1 / 208</div>
-    <div class="write-wrap">
+    <div class="write-wrap" id="writeWrap">
       <canvas id="guideCanvas"></canvas>
       <canvas id="drawCanvas"></canvas>
       <div class="romaji-badge" id="writeRomaji">a</div>
@@ -560,7 +561,6 @@
 <script>
 // ====== 假名資料 ======
 const kanaData = [
-  // ========== 平假名 清音 ==========
   { kana: "あ", romaji: "a", type: "平假名", group: "清音", word: "あめ", reading: "ame", meaning: "雨" },
   { kana: "い", romaji: "i", type: "平假名", group: "清音", word: "いぬ", reading: "inu", meaning: "狗" },
   { kana: "う", romaji: "u", type: "平假名", group: "清音", word: "うみ", reading: "umi", meaning: "海" },
@@ -607,8 +607,6 @@ const kanaData = [
   { kana: "わ", romaji: "wa", type: "平假名", group: "清音", word: "わたし", reading: "watashi", meaning: "我" },
   { kana: "を", romaji: "wo", type: "平假名", group: "清音", word: "を", reading: "wo", meaning: "（助詞）" },
   { kana: "ん", romaji: "n", type: "平假名", group: "清音", word: "ほん", reading: "hon", meaning: "書" },
-
-  // ========== 平假名 濁音 ==========
   { kana: "が", romaji: "ga", type: "平假名", group: "濁音", word: "がっこう", reading: "gakkou", meaning: "學校" },
   { kana: "ぎ", romaji: "gi", type: "平假名", group: "濁音", word: "ぎん", reading: "gin", meaning: "銀" },
   { kana: "ぐ", romaji: "gu", type: "平假名", group: "濁音", word: "ぐあい", reading: "guai", meaning: "狀況" },
@@ -629,15 +627,11 @@ const kanaData = [
   { kana: "ぶ", romaji: "bu", type: "平假名", group: "濁音", word: "ぶた", reading: "buta", meaning: "豬" },
   { kana: "べ", romaji: "be", type: "平假名", group: "濁音", word: "べんきょう", reading: "benkyou", meaning: "讀書" },
   { kana: "ぼ", romaji: "bo", type: "平假名", group: "濁音", word: "ぼうし", reading: "boushi", meaning: "帽子" },
-
-  // ========== 平假名 半濁音 ==========
   { kana: "ぱ", romaji: "pa", type: "平假名", group: "半濁音", word: "ぱん", reading: "pan", meaning: "麵包" },
   { kana: "ぴ", romaji: "pi", type: "平假名", group: "半濁音", word: "ぴあの", reading: "piano", meaning: "鋼琴" },
   { kana: "ぷ", romaji: "pu", type: "平假名", group: "半濁音", word: "ぷーる", reading: "puuru", meaning: "游泳池" },
   { kana: "ぺ", romaji: "pe", type: "平假名", group: "半濁音", word: "ぺん", reading: "pen", meaning: "筆" },
   { kana: "ぽ", romaji: "po", type: "平假名", group: "半濁音", word: "ぽすと", reading: "posuto", meaning: "郵筒" },
-
-  // ========== 平假名 拗音 ==========
   { kana: "きゃ", romaji: "kya", type: "平假名", group: "拗音", word: "きゃく", reading: "kyaku", meaning: "客人" },
   { kana: "きゅ", romaji: "kyu", type: "平假名", group: "拗音", word: "きゅう", reading: "kyuu", meaning: "九" },
   { kana: "きょ", romaji: "kyo", type: "平假名", group: "拗音", word: "きょう", reading: "kyou", meaning: "今天" },
@@ -671,8 +665,6 @@ const kanaData = [
   { kana: "ぴゃ", romaji: "pya", type: "平假名", group: "拗音", word: "ぴゃく", reading: "pyaku", meaning: "百（罕）" },
   { kana: "ぴゅ", romaji: "pyu", type: "平假名", group: "拗音", word: "ぴゅあ", reading: "pyua", meaning: "純（罕）" },
   { kana: "ぴょ", romaji: "pyo", type: "平假名", group: "拗音", word: "ぴょんぴょん", reading: "pyonpyon", meaning: "跳跳" },
-
-  // ========== 片假名 清音 ==========
   { kana: "ア", romaji: "a", type: "片假名", group: "清音", word: "アイス", reading: "aisu", meaning: "冰淇淋" },
   { kana: "イ", romaji: "i", type: "片假名", group: "清音", word: "イタリア", reading: "itaria", meaning: "義大利" },
   { kana: "ウ", romaji: "u", type: "片假名", group: "清音", word: "ウール", reading: "uuru", meaning: "羊毛" },
@@ -719,8 +711,6 @@ const kanaData = [
   { kana: "ワ", romaji: "wa", type: "片假名", group: "清音", word: "ワイン", reading: "wain", meaning: "葡萄酒" },
   { kana: "ヲ", romaji: "wo", type: "片假名", group: "清音", word: "ヲ", reading: "wo", meaning: "（助詞）" },
   { kana: "ン", romaji: "n", type: "片假名", group: "清音", word: "パン", reading: "pan", meaning: "麵包" },
-
-  // ========== 片假名 濁音 ==========
   { kana: "ガ", romaji: "ga", type: "片假名", group: "濁音", word: "ガス", reading: "gasu", meaning: "瓦斯" },
   { kana: "ギ", romaji: "gi", type: "片假名", group: "濁音", word: "ギター", reading: "gitaa", meaning: "吉他" },
   { kana: "グ", romaji: "gu", type: "片假名", group: "濁音", word: "グループ", reading: "guruupu", meaning: "團體" },
@@ -741,15 +731,11 @@ const kanaData = [
   { kana: "ブ", romaji: "bu", type: "片假名", group: "濁音", word: "ブラシ", reading: "burashi", meaning: "刷子" },
   { kana: "ベ", romaji: "be", type: "片假名", group: "濁音", word: "ベッド", reading: "beddo", meaning: "床" },
   { kana: "ボ", romaji: "bo", type: "片假名", group: "濁音", word: "ボール", reading: "booru", meaning: "球" },
-
-  // ========== 片假名 半濁音 ==========
   { kana: "パ", romaji: "pa", type: "片假名", group: "半濁音", word: "パン", reading: "pan", meaning: "麵包" },
   { kana: "ピ", romaji: "pi", type: "片假名", group: "半濁音", word: "ピザ", reading: "piza", meaning: "披薩" },
   { kana: "プ", romaji: "pu", type: "片假名", group: "半濁音", word: "プール", reading: "puuru", meaning: "游泳池" },
   { kana: "ペ", romaji: "pe", type: "片假名", group: "半濁音", word: "ペン", reading: "pen", meaning: "筆" },
   { kana: "ポ", romaji: "po", type: "片假名", group: "半濁音", word: "ポスト", reading: "posuto", meaning: "郵筒" },
-
-  // ========== 片假名 拗音 ==========
   { kana: "キャ", romaji: "kya", type: "片假名", group: "拗音", word: "キャンプ", reading: "kyanpu", meaning: "露營" },
   { kana: "キュ", romaji: "kyu", type: "片假名", group: "拗音", word: "キュート", reading: "kyuuto", meaning: "可愛" },
   { kana: "キョ", romaji: "kyo", type: "片假名", group: "拗音", word: "キョロキョロ", reading: "kyorokyoro", meaning: "東張西望" },
@@ -855,6 +841,7 @@ const btnPrevLearn = document.getElementById('btnPrevLearn');
 const btnPlayLearn = document.getElementById('btnPlayLearn');
 const btnNextLearn = document.getElementById('btnNextLearn');
 
+const writeWrap = document.getElementById('writeWrap');
 const writeProgress = document.getElementById('writeProgress');
 const guideCanvas = document.getElementById('guideCanvas');
 const drawCanvas = document.getElementById('drawCanvas');
@@ -934,18 +921,27 @@ function resizeCanvas() {
   dCtx.lineWidth = 6;
   redrawGuide();
 }
+
+// 依字元數計算字體倍率
+function getFontScale(kana) {
+  const len = kana.length; // 拗音為 2
+  if (len >= 2) return 0.55;  // 雙字元縮小
+  return 0.8;                  // 單字元正常
+}
+
 function redrawGuide() {
   const w = guideCanvas.width / (window.devicePixelRatio || 1);
   const h = guideCanvas.height / (window.devicePixelRatio || 1);
   gCtx.clearRect(0, 0, w, h);
   if (!guideVisible || filteredData.length === 0) return;
   const item = filteredData[writeIndex];
+  const scale = getFontScale(item.kana);
   gCtx.save();
   gCtx.globalAlpha = 0.18;
   gCtx.fillStyle = '#ffffff';
   gCtx.textAlign = 'center';
   gCtx.textBaseline = 'middle';
-  gCtx.font = `${Math.min(w, h) * 0.75}px "Hiragino Sans", "Noto Sans JP", sans-serif`;
+  gCtx.font = `${Math.min(w, h) * scale}px "Hiragino Sans", "Noto Sans JP", sans-serif`;
   gCtx.fillText(item.kana, w / 2, h / 2);
   gCtx.globalAlpha = 0.12;
   gCtx.strokeStyle = '#ffffff';
@@ -956,18 +952,33 @@ function redrawGuide() {
   gCtx.stroke();
   gCtx.restore();
 }
+
 function renderWrite() {
   if (filteredData.length === 0) return;
   if (writeIndex >= filteredData.length) writeIndex = 0;
   const item = filteredData[writeIndex];
+
+  // 依字元數切換手寫板寬度
+  if (item.kana.length >= 2) {
+    writeWrap.classList.add('wide');
+  } else {
+    writeWrap.classList.remove('wide');
+  }
+
   writeProgress.textContent = `${writeIndex + 1} / ${filteredData.length} · ${item.group}`;
   writeRomaji.textContent = item.romaji;
   writeExHint.textContent = `例：${item.word}（${item.reading}）${item.meaning}`;
   btnPrevWrite.style.opacity = writeIndex === 0 ? 0.4 : 1;
   btnNextWrite.style.opacity = writeIndex === filteredData.length - 1 ? 0.4 : 1;
-  clearCanvas();
-  redrawGuide();
+
+  // 寬度改變後重新量尺寸
+  requestAnimationFrame(() => {
+    resizeCanvas();
+    clearCanvas();
+    redrawGuide();
+  });
 }
+
 function clearCanvas() {
   const w = drawCanvas.width / (window.devicePixelRatio || 1);
   const h = drawCanvas.height / (window.devicePixelRatio || 1);
@@ -1122,10 +1133,9 @@ function exitRetryMode() { retryMode = false; retryPool = []; }
 btnPlayQuiz.addEventListener('click', () => { if (quizItem) speak(quizItem.kana); });
 
 // ====== 發音表 ======
-let tableType = '平假名';   // 平假名 / 片假名
-let tableSection = 'seion'; // seion / dakuon / yoon
+let tableType = '平假名';
+let tableSection = 'seion';
 
-// 表格結構定義
 const TABLE_LAYOUT = {
   seion: {
     title: '清音（五十音）',
@@ -1174,7 +1184,6 @@ const TABLE_LAYOUT = {
   }
 };
 
-// 平假名 → 片假名對照（用於切換）
 const HIRA_TO_KATA = {
   'あ':'ア','い':'イ','う':'ウ','え':'エ','お':'オ',
   'か':'カ','き':'キ','く':'ク','け':'ケ','こ':'コ',
@@ -1192,7 +1201,6 @@ const HIRA_TO_KATA = {
   'ば':'バ','び':'ビ','ぶ':'ブ','べ':'ベ','ぼ':'ボ',
   'ぱ':'パ','ぴ':'ピ','ぷ':'プ','ぺ':'ペ','ぽ':'ポ'
 };
-// 拗音對照
 const YOON_TO_KATA = {
   'きゃ':'キャ','きゅ':'キュ','きょ':'キョ',
   'しゃ':'シャ','しゅ':'シュ','しょ':'ショ',
@@ -1207,7 +1215,6 @@ const YOON_TO_KATA = {
   'ぴゃ':'ピャ','ぴゅ':'ピュ','ぴょ':'ピョ'
 };
 
-// 建立查表用的 Map：kana → item
 const kanaMap = new Map();
 kanaData.forEach(item => kanaMap.set(item.kana, item));
 
@@ -1223,21 +1230,15 @@ function renderTable() {
   const isKata = tableType === '片假名';
 
   let html = `<table class="kana-table">`;
-
-  // 表頭
   html += `<tr><th class="row-label"></th>`;
   layout.headers.forEach(h => { html += `<th>${h}</th>`; });
   html += `</tr>`;
 
-  // 每一行
   layout.rows.forEach(row => {
     html += `<tr>`;
     html += `<td class="row-label">${isKata ? toKatakana(row.label.replace('行','')) + '行' : row.label}</td>`;
     row.keys.forEach(k => {
-      if (!k) {
-        html += `<td class="empty"></td>`;
-        return;
-      }
+      if (!k) { html += `<td class="empty"></td>`; return; }
       const displayKana = isKata ? toKatakana(k) : k;
       const item = kanaMap.get(k);
       const romaji = item ? item.romaji : '';
@@ -1248,11 +1249,9 @@ function renderTable() {
     });
     html += `</tr>`;
   });
-
   html += `</table>`;
   container.innerHTML = html;
 
-  // 綁定點擊事件
   container.querySelectorAll('td[data-kana]').forEach(td => {
     td.addEventListener('click', () => speak(td.dataset.kana));
   });
