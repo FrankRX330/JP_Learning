@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>日文50音＋濁音＋拗音＋發音表</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Helvetica Neue", "Noto Sans TC", sans-serif;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    color: #eee;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .app {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 28px 22px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+    color: #ffd369;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.76rem;
+    color: #aaa;
+    margin-bottom: 14px;
+  }
+  .mode-switch {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .mode-switch button {
+    flex: 1;
+    padding: 10px 6px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    color: #ccc;
+    font-size: 0.76rem;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .mode-switch button.active {
+    background: #ffd369;
+    color: #1a1a2e;
+    font-weight: bold;
+  }
+  .filter-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-bar button {
+    flex-shrink: 0;
+    padding: 7px 13px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    color: #ccc;
+    font-size: 0.74rem;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+  }
+  .filter-bar button.active {
+    background: #ffd369;
+    color: #1a1a2e;
+    border-color: #ffd369;
+    font-weight: bold;
+  }
+  .tool-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+  }
+  .toggle-btn {
+    padding: 7px 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    color: #aaa;
+    font-size: 0.74rem;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .toggle-btn.on {
+    background: #2ecc71;
+    border-color: #2ecc71;
+    color: #fff;
+    font-weight: bold;
+  }
+  .card {
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: center;
+    margin-bottom: 16px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .kana {
+    font-size: 4.4rem;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 6px;
+    user-select: none;
+  }
+  .romaji {
+    font-size: 1.25rem;
+    color: #ffd369;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .type-label {
+    font-size: 0.7rem;
+    color: #888;
+    margin-bottom: 10px;
+  }
+  .example {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .example:hover { background: rgba(255,211,105,0.1); border-color: rgba(255,211,105,0.3); }
+  .ex-word { font-size: 1.15rem; color: #fff; font-weight: bold; }
+  .ex-reading { font-size: 0.76rem; color: #ffd369; }
+  .ex-meaning { font-size: 0.76rem; color: #aaa; }
+
+  .progress {
+    text-align: center;
+    font-size: 0.76rem;
+    color: #aaa;
+    margin-bottom: 10px;
+  }
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .controls button {
+    flex: 1;
+    padding: 13px;
+    border: none;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: bold;
+  }
+  .btn-prev, .btn-next {
+    background: rgba(255,255,255,0.15);
+    color: #eee;
+  }
+  .btn-prev:hover, .btn-next:hover { background: rgba(255,255,255,0.25); }
+  .btn-play { background: #ffd369; color: #1a1a2e; }
+  .btn-play:hover { background: #ffc107; }
+
+  .write-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 320px;
+    margin: 0 auto 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 20px;
+    border: 2px dashed rgba(255,255,255,0.15);
+    overflow: hidden;
+  }
+  .write-wrap canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+  #guideCanvas { pointer-events: none; }
+  #drawCanvas { cursor: crosshair; }
+  .romaji-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,211,105,0.9);
+    color: #1a1a2e;
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 4px 16px;
+    border-radius: 999px;
+    pointer-events: none;
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    z-index: 5;
+  }
+  .write-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .write-controls button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .btn-clear { background: rgba(231,76,60,0.8); color: #fff; }
+  .btn-clear:hover { background: #e74c3c; }
+  .btn-guide { background: rgba(255,255,255,0.15); color: #eee; }
+  .btn-guide:hover { background: rgba(255,255,255,0.25); }
+  .btn-guide.on { background: #2ecc71; color: #fff; }
+  .hint {
+    text-align: center;
+    font-size: 0.72rem;
+    color: #888;
+    margin-bottom: 12px;
+  }
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .options button {
+    padding: 16px;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .options button:hover {
+    border-color: #ffd369;
+    background: rgba(255,211,105,0.1);
+  }
+  .options button.correct { background: #2ecc71; border-color: #2ecc71; }
+  .options button.wrong { background: #e74c3c; border-color: #e74c3c; }
+  .options button:disabled { cursor: default; opacity: 0.7; }
+  .feedback {
+    text-align: center;
+    font-size: 1rem;
+    min-height: 24px;
+    margin-top: 12px;
+    font-weight: bold;
+  }
+  .feedback.ok { color: #2ecc71; }
+  .feedback.no { color: #e74c3c; }
+  .stats {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.76rem;
+    color: #aaa;
+    margin-top: 14px;
+  }
+  .wrong-section {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .wrong-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .wrong-header span {
+    font-size: 0.8rem;
+    color: #e74c3c;
+    font-weight: bold;
+  }
+  .wrong-header button {
+    padding: 7px 14px;
+    border: none;
+    border-radius: 10px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .wrong-header button:disabled {
+    background: rgba(255,255,255,0.1);
+    color: #666;
+    cursor: default;
+  }
+  .wrong-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .wrong-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    background: rgba(231,76,60,0.15);
+    border: 1px solid rgba(231,76,60,0.4);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: #fff;
+    cursor: pointer;
+  }
+  .wrong-chip .chip-romaji { font-size: 0.68rem; color: #e74c3c; }
+  .empty-hint {
+    font-size: 0.76rem;
+    color: #666;
+    text-align: center;
+    padding: 8px;
+  }
+  .hidden { display: none; }
+
+  /* ====== 發音表 ====== */
+  .table-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .table-tabs button {
+    flex: 1;
+    padding: 9px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    color: #ccc;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .table-tabs button.active {
+    background: #ffd369;
+    color: #1a1a2e;
+    font-weight: bold;
+  }
+  .table-tabs button.sub {
+    flex: 0 0 auto;
+    padding: 9px 14px;
+    font-size: 0.76rem;
+  }
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+  .table-scroll::-webkit-scrollbar { display: none; }
+  .kana-table {
+    border-collapse: separate;
+    border-spacing: 4px;
+    width: 100%;
+    min-width: 320px;
+  }
+  .kana-table th {
+    font-size: 0.68rem;
+    color: #888;
+    font-weight: normal;
+    padding: 2px 0;
+  }
+  .kana-table td {
+    text-align: center;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 6px 2px;
+    cursor: pointer;
+    transition: 0.15s;
+    width: 18%;
+  }
+  .kana-table td:hover {
+    background: rgba(255,211,105,0.15);
+    border-color: rgba(255,211,105,0.4);
+  }
+  .kana-table td:active {
+    background: rgba(255,211,105,0.3);
+  }
+  .kana-table td.empty {
+    background: transparent;
+    border: none;
+    cursor: default;
+  }
+  .kana-table .cell-kana {
+    font-size: 1.35rem;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .kana-table .cell-romaji {
+    font-size: 0.6rem;
+    color: #ffd369;
+    letter-spacing: 0.5px;
+  }
+  .kana-table .row-label {
+    font-size: 0.68rem;
+    color: #888;
+    background: transparent;
+    border: none;
+    cursor: default;
+    white-space: nowrap;
+    padding-right: 4px;
+  }
+  .table-section-title {
+    font-size: 0.8rem;
+    color: #ffd369;
+    font-weight: bold;
+    margin: 14px 0 8px;
+    padding-left: 4px;
+  }
+  .table-hint {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 10px;
+  }
+  @media (max-width: 400px) {
+    .kana { font-size: 3.8rem; }
+    .kana-table .cell-kana { font-size: 1.15rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>日文50音＋濁音＋拗音</h1>
+  <p class="subtitle">聽發音 · 看字形 · 動手寫 · 查表</p>
+
+  <div class="mode-switch">
+    <button id="modeLearn" class="active">學習</button>
+    <button id="modeWrite">手寫</button>
+    <button id="modeQuiz">測驗</button>
+    <button id="modeTable">發音表</button>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <button data-filter="all" class="active">全部</button>
+    <button data-filter="清音">清音</button>
+    <button data-filter="濁音">濁音</button>
+    <button data-filter="半濁音">半濁音</button>
+    <button data-filter="拗音">拗音</button>
+    <button data-filter="平假名">平假名</button>
+    <button data-filter="片假名">片假名</button>
+  </div>
+
+  <div class="tool-bar" id="toolBar">
+    <button class="toggle-btn" id="btnShuffle">🔀 順序：固定</button>
+  </div>
+
+  <!-- 學習模式 -->
+  <div id="learnPanel">
+    <div class="progress" id="learnProgress">1 / 208</div>
+    <div class="card" id="learnCard">
+      <div class="kana" id="learnKana">あ</div>
+      <div class="romaji" id="learnRomaji">a</div>
+      <div class="type-label" id="learnType">平假名 · 清音</div>
+      <div class="example" id="learnExample">
+        <span class="ex-word" id="learnExWord">あめ</span>
+        <span class="ex-reading" id="learnExReading">ame</span>
+        <span class="ex-meaning" id="learnExMeaning">雨</span>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn-prev" id="btnPrevLearn">← 上一個</button>
+      <button class="btn-play" id="btnPlayLearn">🔊 聽發音</button>
+      <button class="btn-next" id="btnNextLearn">下一個 →</button>
+    </div>
+  </div>
+
+  <!-- 手寫模式 -->
+  <div id="writePanel" class="hidden">
+    <div class="progress" id="writeProgress">1 / 208</div>
+    <div class="write-wrap">
+      <canvas id="guideCanvas"></canvas>
+      <canvas id="drawCanvas"></canvas>
+      <div class="romaji-badge" id="writeRomaji">a</div>
+    </div>
+    <p class="hint" id="writeExHint">例：あめ（ame）雨</p>
+    <div class="write-controls">
+      <button class="btn-clear" id="btnClear">🗑 清除</button>
+      <button class="btn-guide" id="btnGuide">👁 顯示正解</button>
+      <button class="btn-play" id="btnPlayWrite" style="flex:1;border:none;border-radius:12px;background:#ffd369;color:#1a1a2e;font-weight:bold;cursor:pointer;">🔊 發音</button>
+    </div>
+    <div class="controls">
+      <button class="btn-prev" id="btnPrevWrite">← 上一個</button>
+      <button class="btn-next" id="btnNextWrite">下一個 →</button>
+    </div>
+  </div>
+
+  <!-- 測驗模式 -->
+  <div id="quizPanel" class="hidden">
+    <div class="card" id="quizCard">
+      <div class="kana" id="quizKana">あ</div>
+      <div class="type-label" id="quizType">平假名 · 清音</div>
+    </div>
+    <div class="controls">
+      <button class="btn-play" id="btnPlayQuiz">🔊 再聽一次</button>
+    </div>
+    <div class="options" id="quizOptions"></div>
+    <div class="feedback" id="quizFeedback"></div>
+    <div class="stats">
+      <span>正確：<b id="scoreCorrect">0</b></span>
+      <span>錯誤：<b id="scoreWrong">0</b></span>
+      <span>連續：<b id="scoreStreak">0</b></span>
+    </div>
+    <div class="wrong-section">
+      <div class="wrong-header">
+        <span>❌ 錯題：<b id="wrongCount">0</b> 個</span>
+        <button id="btnRetryWrong" disabled>重練錯題</button>
+      </div>
+      <div class="wrong-list" id="wrongList">
+        <div class="empty-hint">目前沒有錯題，繼續加油！</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 發音表模式 -->
+  <div id="tablePanel" class="hidden">
+    <div class="table-tabs">
+      <button id="tabHiragana" class="active">平假名</button>
+      <button id="tabKatakana">片假名</button>
+    </div>
+    <div class="table-tabs">
+      <button class="sub active" data-section="seion">清音</button>
+      <button class="sub" data-section="dakuon">濁音·半濁音</button>
+      <button class="sub" data-section="yoon">拗音</button>
+    </div>
+    <div class="table-scroll" id="tableContainer"></div>
+    <p class="table-hint">點擊任一格可聽發音</p>
+  </div>
+</div>
+
+<script>
+// ====== 假名資料 ======
+const kanaData = [
+  // ========== 平假名 清音 ==========
+  { kana: "あ", romaji: "a", type: "平假名", group: "清音", word: "あめ", reading: "ame", meaning: "雨" },
+  { kana: "い", romaji: "i", type: "平假名", group: "清音", word: "いぬ", reading: "inu", meaning: "狗" },
+  { kana: "う", romaji: "u", type: "平假名", group: "清音", word: "うみ", reading: "umi", meaning: "海" },
+  { kana: "え", romaji: "e", type: "平假名", group: "清音", word: "えき", reading: "eki", meaning: "車站" },
+  { kana: "お", romaji: "o", type: "平假名", group: "清音", word: "おかね", reading: "okane", meaning: "錢" },
+  { kana: "か", romaji: "ka", type: "平假名", group: "清音", word: "かさ", reading: "kasa", meaning: "傘" },
+  { kana: "き", romaji: "ki", type: "平假名", group: "清音", word: "き", reading: "ki", meaning: "樹" },
+  { kana: "く", romaji: "ku", type: "平假名", group: "清音", word: "くつ", reading: "kutsu", meaning: "鞋子" },
+  { kana: "け", romaji: "ke", type: "平假名", group: "清音", word: "けむり", reading: "kemuri", meaning: "煙" },
+  { kana: "こ", romaji: "ko", type: "平假名", group: "清音", word: "こえ", reading: "koe", meaning: "聲音" },
+  { kana: "さ", romaji: "sa", type: "平假名", group: "清音", word: "さかな", reading: "sakana", meaning: "魚" },
+  { kana: "し", romaji: "shi", type: "平假名", group: "清音", word: "しお", reading: "shio", meaning: "鹽" },
+  { kana: "す", romaji: "su", type: "平假名", group: "清音", word: "すし", reading: "sushi", meaning: "壽司" },
+  { kana: "せ", romaji: "se", type: "平假名", group: "清音", word: "せかい", reading: "sekai", meaning: "世界" },
+  { kana: "そ", romaji: "so", type: "平假名", group: "清音", word: "そら", reading: "sora", meaning: "天空" },
+  { kana: "た", romaji: "ta", type: "平假名", group: "清音", word: "たまご", reading: "tamago", meaning: "蛋" },
+  { kana: "ち", romaji: "chi", type: "平假名", group: "清音", word: "ちず", reading: "chizu", meaning: "地圖" },
+  { kana: "つ", romaji: "tsu", type: "平假名", group: "清音", word: "つき", reading: "tsuki", meaning: "月亮" },
+  { kana: "て", romaji: "te", type: "平假名", group: "清音", word: "て", reading: "te", meaning: "手" },
+  { kana: "と", romaji: "to", type: "平假名", group: "清音", word: "とり", reading: "tori", meaning: "鳥" },
+  { kana: "な", romaji: "na", type: "平假名", group: "清音", word: "なつ", reading: "natsu", meaning: "夏天" },
+  { kana: "に", romaji: "ni", type: "平假名", group: "清音", word: "にく", reading: "niku", meaning: "肉" },
+  { kana: "ぬ", romaji: "nu", type: "平假名", group: "清音", word: "ぬの", reading: "nuno", meaning: "布" },
+  { kana: "ね", romaji: "ne", type: "平假名", group: "清音", word: "ねこ", reading: "neko", meaning: "貓" },
+  { kana: "の", romaji: "no", type: "平假名", group: "清音", word: "のみもの", reading: "nomimono", meaning: "飲料" },
+  { kana: "は", romaji: "ha", type: "平假名", group: "清音", word: "はな", reading: "hana", meaning: "花" },
+  { kana: "ひ", romaji: "hi", type: "平假名", group: "清音", word: "ひと", reading: "hito", meaning: "人" },
+  { kana: "ふ", romaji: "fu", type: "平假名", group: "清音", word: "ふゆ", reading: "fuyu", meaning: "冬天" },
+  { kana: "へ", romaji: "he", type: "平假名", group: "清音", word: "へや", reading: "heya", meaning: "房間" },
+  { kana: "ほ", romaji: "ho", type: "平假名", group: "清音", word: "ほし", reading: "hoshi", meaning: "星星" },
+  { kana: "ま", romaji: "ma", type: "平假名", group: "清音", word: "まど", reading: "mado", meaning: "窗戶" },
+  { kana: "み", romaji: "mi", type: "平假名", group: "清音", word: "みず", reading: "mizu", meaning: "水" },
+  { kana: "む", romaji: "mu", type: "平假名", group: "清音", word: "むし", reading: "mushi", meaning: "蟲" },
+  { kana: "め", romaji: "me", type: "平假名", group: "清音", word: "め", reading: "me", meaning: "眼睛" },
+  { kana: "も", romaji: "mo", type: "平假名", group: "清音", word: "もり", reading: "mori", meaning: "森林" },
+  { kana: "や", romaji: "ya", type: "平假名", group: "清音", word: "やま", reading: "yama", meaning: "山" },
+  { kana: "ゆ", romaji: "yu", type: "平假名", group: "清音", word: "ゆき", reading: "yuki", meaning: "雪" },
+  { kana: "よ", romaji: "yo", type: "平假名", group: "清音", word: "よる", reading: "yoru", meaning: "夜晚" },
+  { kana: "ら", romaji: "ra", type: "平假名", group: "清音", word: "らいねん", reading: "rainen", meaning: "明年" },
+  { kana: "り", romaji: "ri", type: "平假名", group: "清音", word: "りんご", reading: "ringo", meaning: "蘋果" },
+  { kana: "る", romaji: "ru", type: "平假名", group: "清音", word: "るす", reading: "rusu", meaning: "不在家" },
+  { kana: "れ", romaji: "re", type: "平假名", group: "清音", word: "れい", reading: "rei", meaning: "例子" },
+  { kana: "ろ", romaji: "ro", type: "平假名", group: "清音", word: "ろく", reading: "roku", meaning: "六" },
+  { kana: "わ", romaji: "wa", type: "平假名", group: "清音", word: "わたし", reading: "watashi", meaning: "我" },
+  { kana: "を", romaji: "wo", type: "平假名", group: "清音", word: "を", reading: "wo", meaning: "（助詞）" },
+  { kana: "ん", romaji: "n", type: "平假名", group: "清音", word: "ほん", reading: "hon", meaning: "書" },
+
+  // ========== 平假名 濁音 ==========
+  { kana: "が", romaji: "ga", type: "平假名", group: "濁音", word: "がっこう", reading: "gakkou", meaning: "學校" },
+  { kana: "ぎ", romaji: "gi", type: "平假名", group: "濁音", word: "ぎん", reading: "gin", meaning: "銀" },
+  { kana: "ぐ", romaji: "gu", type: "平假名", group: "濁音", word: "ぐあい", reading: "guai", meaning: "狀況" },
+  { kana: "げ", romaji: "ge", type: "平假名", group: "濁音", word: "げんき", reading: "genki", meaning: "精神" },
+  { kana: "ご", romaji: "go", type: "平假名", group: "濁音", word: "ごはん", reading: "gohan", meaning: "飯" },
+  { kana: "ざ", romaji: "za", type: "平假名", group: "濁音", word: "ざっし", reading: "zasshi", meaning: "雜誌" },
+  { kana: "じ", romaji: "ji", type: "平假名", group: "濁音", word: "じかん", reading: "jikan", meaning: "時間" },
+  { kana: "ず", romaji: "zu", type: "平假名", group: "濁音", word: "ずつう", reading: "zutsuu", meaning: "頭痛" },
+  { kana: "ぜ", romaji: "ze", type: "平假名", group: "濁音", word: "ぜんぶ", reading: "zenbu", meaning: "全部" },
+  { kana: "ぞ", romaji: "zo", type: "平假名", group: "濁音", word: "ぞう", reading: "zou", meaning: "大象" },
+  { kana: "だ", romaji: "da", type: "平假名", group: "濁音", word: "だいがく", reading: "daigaku", meaning: "大學" },
+  { kana: "ぢ", romaji: "ji", type: "平假名", group: "濁音", word: "ぢめん", reading: "jimen", meaning: "地面" },
+  { kana: "づ", romaji: "zu", type: "平假名", group: "濁音", word: "つづく", reading: "tsuzuku", meaning: "繼續" },
+  { kana: "で", romaji: "de", type: "平假名", group: "濁音", word: "でんわ", reading: "denwa", meaning: "電話" },
+  { kana: "ど", romaji: "do", type: "平假名", group: "濁音", word: "どあ", reading: "doa", meaning: "門" },
+  { kana: "ば", romaji: "ba", type: "平假名", group: "濁音", word: "ばしょ", reading: "basho", meaning: "場所" },
+  { kana: "び", romaji: "bi", type: "平假名", group: "濁音", word: "びょういん", reading: "byouin", meaning: "醫院" },
+  { kana: "ぶ", romaji: "bu", type: "平假名", group: "濁音", word: "ぶた", reading: "buta", meaning: "豬" },
+  { kana: "べ", romaji: "be", type: "平假名", group: "濁音", word: "べんきょう", reading: "benkyou", meaning: "讀書" },
+  { kana: "ぼ", romaji: "bo", type: "平假名", group: "濁音", word: "ぼうし", reading: "boushi", meaning: "帽子" },
+
+  // ========== 平假名 半濁音 ==========
+  { kana: "ぱ", romaji: "pa", type: "平假名", group: "半濁音", word: "ぱん", reading: "pan", meaning: "麵包" },
+  { kana: "ぴ", romaji: "pi", type: "平假名", group: "半濁音", word: "ぴあの", reading: "piano", meaning: "鋼琴" },
+  { kana: "ぷ", romaji: "pu", type: "平假名", group: "半濁音", word: "ぷーる", reading: "puuru", meaning: "游泳池" },
+  { kana: "ぺ", romaji: "pe", type: "平假名", group: "半濁音", word: "ぺん", reading: "pen", meaning: "筆" },
+  { kana: "ぽ", romaji: "po", type: "平假名", group: "半濁音", word: "ぽすと", reading: "posuto", meaning: "郵筒" },
+
+  // ========== 平假名 拗音 ==========
+  { kana: "きゃ", romaji: "kya", type: "平假名", group: "拗音", word: "きゃく", reading: "kyaku", meaning: "客人" },
+  { kana: "きゅ", romaji: "kyu", type: "平假名", group: "拗音", word: "きゅう", reading: "kyuu", meaning: "九" },
+  { kana: "きょ", romaji: "kyo", type: "平假名", group: "拗音", word: "きょう", reading: "kyou", meaning: "今天" },
+  { kana: "しゃ", romaji: "sha", type: "平假名", group: "拗音", word: "しゃしん", reading: "shashin", meaning: "照片" },
+  { kana: "しゅ", romaji: "shu", type: "平假名", group: "拗音", word: "しゅみ", reading: "shumi", meaning: "興趣" },
+  { kana: "しょ", romaji: "sho", type: "平假名", group: "拗音", word: "しょくじ", reading: "shokuji", meaning: "用餐" },
+  { kana: "ちゃ", romaji: "cha", type: "平假名", group: "拗音", word: "ちゃ", reading: "cha", meaning: "茶" },
+  { kana: "ちゅ", romaji: "chu", type: "平假名", group: "拗音", word: "ちゅうしゃ", reading: "chuusha", meaning: "注射" },
+  { kana: "ちょ", romaji: "cho", type: "平假名", group: "拗音", word: "ちょっと", reading: "chotto", meaning: "稍微" },
+  { kana: "にゃ", romaji: "nya", type: "平假名", group: "拗音", word: "にゃんこ", reading: "nyanko", meaning: "貓咪" },
+  { kana: "にゅ", romaji: "nyu", type: "平假名", group: "拗音", word: "にゅうがく", reading: "nyuugaku", meaning: "入學" },
+  { kana: "にょ", romaji: "nyo", type: "平假名", group: "拗音", word: "にょろにょろ", reading: "nyoronyoro", meaning: "蜿蜒" },
+  { kana: "ひゃ", romaji: "hya", type: "平假名", group: "拗音", word: "ひゃく", reading: "hyaku", meaning: "百" },
+  { kana: "ひゅ", romaji: "hyu", type: "平假名", group: "拗音", word: "ひゅうひゅう", reading: "hyuuhyuu", meaning: "風聲" },
+  { kana: "ひょ", romaji: "hyo", type: "平假名", group: "拗音", word: "ひょう", reading: "hyou", meaning: "表" },
+  { kana: "みゃ", romaji: "mya", type: "平假名", group: "拗音", word: "みゃく", reading: "myaku", meaning: "脈" },
+  { kana: "みゅ", romaji: "myu", type: "平假名", group: "拗音", word: "ミュージック", reading: "myuujikku", meaning: "音樂" },
+  { kana: "みょ", romaji: "myo", type: "平假名", group: "拗音", word: "みょうじ", reading: "myouji", meaning: "姓氏" },
+  { kana: "りゃ", romaji: "rya", type: "平假名", group: "拗音", word: "りゃく", reading: "ryaku", meaning: "略" },
+  { kana: "りゅ", romaji: "ryu", type: "平假名", group: "拗音", word: "りゅう", reading: "ryuu", meaning: "龍" },
+  { kana: "りょ", romaji: "ryo", type: "平假名", group: "拗音", word: "りょこう", reading: "ryokou", meaning: "旅行" },
+  { kana: "ぎゃ", romaji: "gya", type: "平假名", group: "拗音", word: "ぎゃく", reading: "gyaku", meaning: "相反" },
+  { kana: "ぎゅ", romaji: "gyu", type: "平假名", group: "拗音", word: "ぎゅうにゅう", reading: "gyuunyuu", meaning: "牛奶" },
+  { kana: "ぎょ", romaji: "gyo", type: "平假名", group: "拗音", word: "ぎょぎょう", reading: "gyogyou", meaning: "漁業" },
+  { kana: "じゃ", romaji: "ja", type: "平假名", group: "拗音", word: "じゃあ", reading: "jaa", meaning: "那麼" },
+  { kana: "じゅ", romaji: "ju", type: "平假名", group: "拗音", word: "じゅぎょう", reading: "jugyou", meaning: "上課" },
+  { kana: "じょ", romaji: "jo", type: "平假名", group: "拗音", word: "じょせい", reading: "josei", meaning: "女性" },
+  { kana: "びゃ", romaji: "bya", type: "平假名", group: "拗音", word: "びゃく", reading: "byaku", meaning: "百（罕）" },
+  { kana: "びゅ", romaji: "byu", type: "平假名", group: "拗音", word: "びゅうびゅう", reading: "byuubyuu", meaning: "風聲" },
+  { kana: "びょ", romaji: "byo", type: "平假名", group: "拗音", word: "びょうき", reading: "byouki", meaning: "生病" },
+  { kana: "ぴゃ", romaji: "pya", type: "平假名", group: "拗音", word: "ぴゃく", reading: "pyaku", meaning: "百（罕）" },
+  { kana: "ぴゅ", romaji: "pyu", type: "平假名", group: "拗音", word: "ぴゅあ", reading: "pyua", meaning: "純（罕）" },
+  { kana: "ぴょ", romaji: "pyo", type: "平假名", group: "拗音", word: "ぴょんぴょん", reading: "pyonpyon", meaning: "跳跳" },
+
+  // ========== 片假名 清音 ==========
+  { kana: "ア", romaji: "a", type: "片假名", group: "清音", word: "アイス", reading: "aisu", meaning: "冰淇淋" },
+  { kana: "イ", romaji: "i", type: "片假名", group: "清音", word: "イタリア", reading: "itaria", meaning: "義大利" },
+  { kana: "ウ", romaji: "u", type: "片假名", group: "清音", word: "ウール", reading: "uuru", meaning: "羊毛" },
+  { kana: "エ", romaji: "e", type: "片假名", group: "清音", word: "エアコン", reading: "eakon", meaning: "空調" },
+  { kana: "オ", romaji: "o", type: "片假名", group: "清音", word: "オレンジ", reading: "orenji", meaning: "柳橙" },
+  { kana: "カ", romaji: "ka", type: "片假名", group: "清音", word: "カメラ", reading: "kamera", meaning: "相機" },
+  { kana: "キ", romaji: "ki", type: "片假名", group: "清音", word: "キロ", reading: "kiro", meaning: "公里" },
+  { kana: "ク", romaji: "ku", type: "片假名", group: "清音", word: "クラス", reading: "kurasu", meaning: "班級" },
+  { kana: "ケ", romaji: "ke", type: "片假名", group: "清音", word: "ケーキ", reading: "keeki", meaning: "蛋糕" },
+  { kana: "コ", romaji: "ko", type: "片假名", group: "清音", word: "コーヒー", reading: "koohii", meaning: "咖啡" },
+  { kana: "サ", romaji: "sa", type: "片假名", group: "清音", word: "サラダ", reading: "sarada", meaning: "沙拉" },
+  { kana: "シ", romaji: "shi", type: "片假名", group: "清音", word: "シャツ", reading: "shatsu", meaning: "襯衫" },
+  { kana: "ス", romaji: "su", type: "片假名", group: "清音", word: "スープ", reading: "suupu", meaning: "湯" },
+  { kana: "セ", romaji: "se", type: "片假名", group: "清音", word: "セーター", reading: "seetaa", meaning: "毛衣" },
+  { kana: "ソ", romaji: "so", type: "片假名", group: "清音", word: "ソファ", reading: "sofa", meaning: "沙發" },
+  { kana: "タ", romaji: "ta", type: "片假名", group: "清音", word: "タクシー", reading: "takushii", meaning: "計程車" },
+  { kana: "チ", romaji: "chi", type: "片假名", group: "清音", word: "チーズ", reading: "chiizu", meaning: "起司" },
+  { kana: "ツ", romaji: "tsu", type: "片假名", group: "清音", word: "ツアー", reading: "tsuaa", meaning: "旅行團" },
+  { kana: "テ", romaji: "te", type: "片假名", group: "清音", word: "テレビ", reading: "terebi", meaning: "電視" },
+  { kana: "ト", romaji: "to", type: "片假名", group: "清音", word: "トマト", reading: "tomato", meaning: "番茄" },
+  { kana: "ナ", romaji: "na", type: "片假名", group: "清音", word: "ナイフ", reading: "naifu", meaning: "刀子" },
+  { kana: "ニ", romaji: "ni", type: "片假名", group: "清音", word: "ニュース", reading: "nyuusu", meaning: "新聞" },
+  { kana: "ヌ", romaji: "nu", type: "片假名", group: "清音", word: "ヌードル", reading: "nuudoru", meaning: "麵條" },
+  { kana: "ネ", romaji: "ne", type: "片假名", group: "清音", word: "ネクタイ", reading: "nekutai", meaning: "領帶" },
+  { kana: "ノ", romaji: "no", type: "片假名", group: "清音", word: "ノート", reading: "nooto", meaning: "筆記本" },
+  { kana: "ハ", romaji: "ha", type: "片假名", group: "清音", word: "ハンバーガー", reading: "hanbaagaa", meaning: "漢堡" },
+  { kana: "ヒ", romaji: "hi", type: "片假名", group: "清音", word: "ヒーター", reading: "hiitaa", meaning: "暖氣" },
+  { kana: "フ", romaji: "fu", type: "片假名", group: "清音", word: "フォーク", reading: "fooku", meaning: "叉子" },
+  { kana: "ヘ", romaji: "he", type: "片假名", group: "清音", word: "ヘリコプター", reading: "herikoputaa", meaning: "直升機" },
+  { kana: "ホ", romaji: "ho", type: "片假名", group: "清音", word: "ホテル", reading: "hoteru", meaning: "飯店" },
+  { kana: "マ", romaji: "ma", type: "片假名", group: "清音", word: "マンガ", reading: "manga", meaning: "漫畫" },
+  { kana: "ミ", romaji: "mi", type: "片假名", group: "清音", word: "ミルク", reading: "miruku", meaning: "牛奶" },
+  { kana: "ム", romaji: "mu", type: "片假名", group: "清音", word: "ムード", reading: "muudo", meaning: "氣氛" },
+  { kana: "メ", romaji: "me", type: "片假名", group: "清音", word: "メニュー", reading: "menyuu", meaning: "菜單" },
+  { kana: "モ", romaji: "mo", type: "片假名", group: "清音", word: "モデル", reading: "moderu", meaning: "模特兒" },
+  { kana: "ヤ", romaji: "ya", type: "片假名", group: "清音", word: "ヤード", reading: "yaado", meaning: "碼" },
+  { kana: "ユ", romaji: "yu", type: "片假名", group: "清音", word: "ユーモア", reading: "yuumoa", meaning: "幽默" },
+  { kana: "ヨ", romaji: "yo", type: "片假名", group: "清音", word: "ヨガ", reading: "yoga", meaning: "瑜伽" },
+  { kana: "ラ", romaji: "ra", type: "片假名", group: "清音", word: "ラジオ", reading: "rajio", meaning: "收音機" },
+  { kana: "リ", romaji: "ri", type: "片假名", group: "清音", word: "リンゴ", reading: "ringo", meaning: "蘋果" },
+  { kana: "ル", romaji: "ru", type: "片假名", group: "清音", word: "ルール", reading: "ruuru", meaning: "規則" },
+  { kana: "レ", romaji: "re", type: "片假名", group: "清音", word: "レモン", reading: "remon", meaning: "檸檬" },
+  { kana: "ロ", romaji: "ro", type: "片假名", group: "清音", word: "ロボット", reading: "robotto", meaning: "機器人" },
+  { kana: "ワ", romaji: "wa", type: "片假名", group: "清音", word: "ワイン", reading: "wain", meaning: "葡萄酒" },
+  { kana: "ヲ", romaji: "wo", type: "片假名", group: "清音", word: "ヲ", reading: "wo", meaning: "（助詞）" },
+  { kana: "ン", romaji: "n", type: "片假名", group: "清音", word: "パン", reading: "pan", meaning: "麵包" },
+
+  // ========== 片假名 濁音 ==========
+  { kana: "ガ", romaji: "ga", type: "片假名", group: "濁音", word: "ガス", reading: "gasu", meaning: "瓦斯" },
+  { kana: "ギ", romaji: "gi", type: "片假名", group: "濁音", word: "ギター", reading: "gitaa", meaning: "吉他" },
+  { kana: "グ", romaji: "gu", type: "片假名", group: "濁音", word: "グループ", reading: "guruupu", meaning: "團體" },
+  { kana: "ゲ", romaji: "ge", type: "片假名", group: "濁音", word: "ゲーム", reading: "geemu", meaning: "遊戲" },
+  { kana: "ゴ", romaji: "go", type: "片假名", group: "濁音", word: "ゴルフ", reading: "gorufu", meaning: "高爾夫" },
+  { kana: "ザ", romaji: "za", type: "片假名", group: "濁音", word: "ザル", reading: "zaru", meaning: "竹簍" },
+  { kana: "ジ", romaji: "ji", type: "片假名", group: "濁音", word: "ジョギング", reading: "jogingu", meaning: "慢跑" },
+  { kana: "ズ", romaji: "zu", type: "片假名", group: "濁音", word: "ズボン", reading: "zubon", meaning: "褲子" },
+  { kana: "ゼ", romaji: "ze", type: "片假名", group: "濁音", word: "ゼロ", reading: "zero", meaning: "零" },
+  { kana: "ゾ", romaji: "zo", type: "片假名", group: "濁音", word: "ゾーン", reading: "zoon", meaning: "區域" },
+  { kana: "ダ", romaji: "da", type: "片假名", group: "濁音", word: "ダンス", reading: "dansu", meaning: "跳舞" },
+  { kana: "ヂ", romaji: "ji", type: "片假名", group: "濁音", word: "ヂ", reading: "ji", meaning: "（罕用）" },
+  { kana: "ヅ", romaji: "zu", type: "片假名", group: "濁音", word: "ヅ", reading: "zu", meaning: "（罕用）" },
+  { kana: "デ", romaji: "de", type: "片假名", group: "濁音", word: "デザイン", reading: "dezain", meaning: "設計" },
+  { kana: "ド", romaji: "do", type: "片假名", group: "濁音", word: "ドア", reading: "doa", meaning: "門" },
+  { kana: "バ", romaji: "ba", type: "片假名", group: "濁音", word: "バス", reading: "basu", meaning: "巴士" },
+  { kana: "ビ", romaji: "bi", type: "片假名", group: "濁音", word: "ビール", reading: "biiru", meaning: "啤酒" },
+  { kana: "ブ", romaji: "bu", type: "片假名", group: "濁音", word: "ブラシ", reading: "burashi", meaning: "刷子" },
+  { kana: "ベ", romaji: "be", type: "片假名", group: "濁音", word: "ベッド", reading: "beddo", meaning: "床" },
+  { kana: "ボ", romaji: "bo", type: "片假名", group: "濁音", word: "ボール", reading: "booru", meaning: "球" },
+
+  // ========== 片假名 半濁音 ==========
+  { kana: "パ", romaji: "pa", type: "片假名", group: "半濁音", word: "パン", reading: "pan", meaning: "麵包" },
+  { kana: "ピ", romaji: "pi", type: "片假名", group: "半濁音", word: "ピザ", reading: "piza", meaning: "披薩" },
+  { kana: "プ", romaji: "pu", type: "片假名", group: "半濁音", word: "プール", reading: "puuru", meaning: "游泳池" },
+  { kana: "ペ", romaji: "pe", type: "片假名", group: "半濁音", word: "ペン", reading: "pen", meaning: "筆" },
+  { kana: "ポ", romaji: "po", type: "片假名", group: "半濁音", word: "ポスト", reading: "posuto", meaning: "郵筒" },
+
+  // ========== 片假名 拗音 ==========
+  { kana: "キャ", romaji: "kya", type: "片假名", group: "拗音", word: "キャンプ", reading: "kyanpu", meaning: "露營" },
+  { kana: "キュ", romaji: "kyu", type: "片假名", group: "拗音", word: "キュート", reading: "kyuuto", meaning: "可愛" },
+  { kana: "キョ", romaji: "kyo", type: "片假名", group: "拗音", word: "キョロキョロ", reading: "kyorokyoro", meaning: "東張西望" },
+  { kana: "シャ", romaji: "sha", type: "片假名", group: "拗音", word: "シャワー", reading: "shawaa", meaning: "淋浴" },
+  { kana: "シュ", romaji: "shu", type: "片假名", group: "拗音", word: "シュークリーム", reading: "shuukuriimu", meaning: "泡芙" },
+  { kana: "ショ", romaji: "sho", type: "片假名", group: "拗音", word: "ショップ", reading: "shoppu", meaning: "商店" },
+  { kana: "チャ", romaji: "cha", type: "片假名", group: "拗音", word: "チャンス", reading: "chansu", meaning: "機會" },
+  { kana: "チュ", romaji: "chu", type: "片假名", group: "拗音", word: "チューリップ", reading: "chuurippu", meaning: "鬱金香" },
+  { kana: "チョ", romaji: "cho", type: "片假名", group: "拗音", word: "チョコ", reading: "choko", meaning: "巧克力" },
+  { kana: "ニャ", romaji: "nya", type: "片假名", group: "拗音", word: "ニャー", reading: "nyaa", meaning: "喵" },
+  { kana: "ニュ", romaji: "nyu", type: "片假名", group: "拗音", word: "ニュアンス", reading: "nyuansu", meaning: "語感" },
+  { kana: "ニョ", romaji: "nyo", type: "片假名", group: "拗音", word: "ニョロニョロ", reading: "nyoronyoro", meaning: "蜿蜒" },
+  { kana: "ヒャ", romaji: "hya", type: "片假名", group: "拗音", word: "ヒャッハー", reading: "hyahhaa", meaning: "歡呼" },
+  { kana: "ヒュ", romaji: "hyu", type: "片假名", group: "拗音", word: "ヒューズ", reading: "hyuuzu", meaning: "保險絲" },
+  { kana: "ヒョ", romaji: "hyo", type: "片假名", group: "拗音", word: "ヒョウ", reading: "hyou", meaning: "豹" },
+  { kana: "ミャ", romaji: "mya", type: "片假名", group: "拗音", word: "ミャンマー", reading: "myanmaa", meaning: "緬甸" },
+  { kana: "ミュ", romaji: "myu", type: "片假名", group: "拗音", word: "ミュージカル", reading: "myuujikaru", meaning: "音樂劇" },
+  { kana: "ミョ", romaji: "myo", type: "片假名", group: "拗音", word: "ミョウガ", reading: "myouga", meaning: "茗荷" },
+  { kana: "リャ", romaji: "rya", type: "片假名", group: "拗音", word: "リャマ", reading: "ryama", meaning: "駱馬" },
+  { kana: "リュ", romaji: "ryu", type: "片假名", group: "拗音", word: "リュック", reading: "ryukku", meaning: "背包" },
+  { kana: "リョ", romaji: "ryo", type: "片假名", group: "拗音", word: "リョウ", reading: "ryou", meaning: "量" },
+  { kana: "ギャ", romaji: "gya", type: "片假名", group: "拗音", word: "ギャグ", reading: "gyagu", meaning: "搞笑" },
+  { kana: "ギュ", romaji: "gyu", type: "片假名", group: "拗音", word: "ギュッ", reading: "gyu", meaning: "緊握" },
+  { kana: "ギョ", romaji: "gyo", type: "片假名", group: "拗音", word: "ギョーザ", reading: "gyooza", meaning: "餃子" },
+  { kana: "ジャ", romaji: "ja", type: "片假名", group: "拗音", word: "ジャム", reading: "jamu", meaning: "果醬" },
+  { kana: "ジュ", romaji: "ju", type: "片假名", group: "拗音", word: "ジュース", reading: "juusu", meaning: "果汁" },
+  { kana: "ジョ", romaji: "jo", type: "片假名", group: "拗音", word: "ジョーク", reading: "jooku", meaning: "玩笑" },
+  { kana: "ビャ", romaji: "bya", type: "片假名", group: "拗音", word: "ビャク", reading: "byaku", meaning: "百（罕）" },
+  { kana: "ビュ", romaji: "byu", type: "片假名", group: "拗音", word: "ビュッフェ", reading: "byuffe", meaning: "自助餐" },
+  { kana: "ビョ", romaji: "byo", type: "片假名", group: "拗音", word: "ビョーキ", reading: "byooki", meaning: "生病" },
+  { kana: "ピャ", romaji: "pya", type: "片假名", group: "拗音", word: "ピャク", reading: "pyaku", meaning: "百（罕）" },
+  { kana: "ピュ", romaji: "pyu", type: "片假名", group: "拗音", word: "ピュア", reading: "pyua", meaning: "純" },
+  { kana: "ピョ", romaji: "pyo", type: "片假名", group: "拗音", word: "ピョンピョン", reading: "pyonpyon", meaning: "跳跳" }
+];
+
+// ====== 語音 ======
+const synth = window.speechSynthesis;
+function speak(text) {
+  if (!synth) return;
+  synth.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'ja-JP';
+  utter.rate = 0.8;
+  synth.speak(utter);
+}
+
+// ====== 篩選與隨機 ======
+let currentFilter = 'all';
+let shuffleMode = false;
+let filteredData = kanaData.slice();
+
+function applyFilter(filter) {
+  currentFilter = filter;
+  if (filter === 'all') filteredData = kanaData.slice();
+  else if (['清音','濁音','半濁音','拗音'].includes(filter)) filteredData = kanaData.filter(x => x.group === filter);
+  else filteredData = kanaData.filter(x => x.type === filter);
+  learnIndex = 0;
+  writeIndex = 0;
+  renderLearn();
+  if (!writePanel.classList.contains('hidden')) {
+    requestAnimationFrame(() => { resizeCanvas(); renderWrite(); });
+  }
+  if (!quizPanel.classList.contains('hidden')) newQuiz();
+}
+document.getElementById('filterBar').addEventListener('click', (e) => {
+  if (e.target.tagName !== 'BUTTON') return;
+  document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  applyFilter(e.target.dataset.filter);
+});
+
+const btnShuffle = document.getElementById('btnShuffle');
+btnShuffle.addEventListener('click', () => {
+  shuffleMode = !shuffleMode;
+  btnShuffle.classList.toggle('on', shuffleMode);
+  btnShuffle.textContent = shuffleMode ? '🔀 順序：隨機' : '🔀 順序：固定';
+  learnIndex = 0;
+  writeIndex = 0;
+  renderLearn();
+  if (!writePanel.classList.contains('hidden')) renderWrite();
+});
+
+// ====== 元素 ======
+const modeLearn = document.getElementById('modeLearn');
+const modeWrite = document.getElementById('modeWrite');
+const modeQuiz = document.getElementById('modeQuiz');
+const modeTable = document.getElementById('modeTable');
+const learnPanel = document.getElementById('learnPanel');
+const writePanel = document.getElementById('writePanel');
+const quizPanel = document.getElementById('quizPanel');
+const tablePanel = document.getElementById('tablePanel');
+const filterBar = document.getElementById('filterBar');
+const toolBar = document.getElementById('toolBar');
+
+const learnKana = document.getElementById('learnKana');
+const learnRomaji = document.getElementById('learnRomaji');
+const learnType = document.getElementById('learnType');
+const learnProgress = document.getElementById('learnProgress');
+const learnExWord = document.getElementById('learnExWord');
+const learnExReading = document.getElementById('learnExReading');
+const learnExMeaning = document.getElementById('learnExMeaning');
+const btnPrevLearn = document.getElementById('btnPrevLearn');
+const btnPlayLearn = document.getElementById('btnPlayLearn');
+const btnNextLearn = document.getElementById('btnNextLearn');
+
+const writeProgress = document.getElementById('writeProgress');
+const guideCanvas = document.getElementById('guideCanvas');
+const drawCanvas = document.getElementById('drawCanvas');
+const writeRomaji = document.getElementById('writeRomaji');
+const writeExHint = document.getElementById('writeExHint');
+const btnClear = document.getElementById('btnClear');
+const btnGuide = document.getElementById('btnGuide');
+const btnPlayWrite = document.getElementById('btnPlayWrite');
+const btnPrevWrite = document.getElementById('btnPrevWrite');
+const btnNextWrite = document.getElementById('btnNextWrite');
+
+const quizKana = document.getElementById('quizKana');
+const quizType = document.getElementById('quizType');
+const btnPlayQuiz = document.getElementById('btnPlayQuiz');
+const quizOptions = document.getElementById('quizOptions');
+const quizFeedback = document.getElementById('quizFeedback');
+const scoreCorrectEl = document.getElementById('scoreCorrect');
+const scoreWrongEl = document.getElementById('scoreWrong');
+const scoreStreakEl = document.getElementById('scoreStreak');
+const wrongCountEl = document.getElementById('wrongCount');
+const wrongListEl = document.getElementById('wrongList');
+const btnRetryWrong = document.getElementById('btnRetryWrong');
+
+// ====== 學習模式 ======
+let learnIndex = 0;
+function renderLearn() {
+  if (filteredData.length === 0) return;
+  if (learnIndex >= filteredData.length) learnIndex = 0;
+  const item = filteredData[learnIndex];
+  learnKana.textContent = item.kana;
+  learnRomaji.textContent = item.romaji;
+  learnType.textContent = `${item.type} · ${item.group}`;
+  learnProgress.textContent = `${learnIndex + 1} / ${filteredData.length}`;
+  learnExWord.textContent = item.word;
+  learnExReading.textContent = item.reading;
+  learnExMeaning.textContent = item.meaning;
+  btnPrevLearn.style.opacity = learnIndex === 0 ? 0.4 : 1;
+  btnNextLearn.style.opacity = learnIndex === filteredData.length - 1 ? 0.4 : 1;
+}
+function prevLearn() { if (learnIndex > 0) { learnIndex--; renderLearn(); } }
+function nextLearn() {
+  if (shuffleMode) learnIndex = Math.floor(Math.random() * filteredData.length);
+  else if (learnIndex < filteredData.length - 1) learnIndex++;
+  renderLearn();
+}
+btnPrevLearn.addEventListener('click', prevLearn);
+btnNextLearn.addEventListener('click', nextLearn);
+btnPlayLearn.addEventListener('click', () => speak(filteredData[learnIndex].kana));
+document.getElementById('learnCard').addEventListener('click', () => speak(filteredData[learnIndex].kana));
+document.getElementById('learnExample').addEventListener('click', (e) => {
+  e.stopPropagation();
+  speak(filteredData[learnIndex].word);
+});
+
+// ====== 手寫模式 ======
+let writeIndex = 0;
+let guideVisible = false;
+let drawing = false;
+let lastX = 0, lastY = 0;
+const dCtx = drawCanvas.getContext('2d');
+const gCtx = guideCanvas.getContext('2d');
+
+function resizeCanvas() {
+  const rect = drawCanvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  [guideCanvas, drawCanvas].forEach(c => {
+    c.width = rect.width * dpr;
+    c.height = rect.height * dpr;
+    c.style.width = rect.width + 'px';
+    c.style.height = rect.height + 'px';
+  });
+  dCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  gCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  dCtx.lineCap = 'round';
+  dCtx.lineJoin = 'round';
+  dCtx.strokeStyle = '#ffd369';
+  dCtx.lineWidth = 6;
+  redrawGuide();
+}
+function redrawGuide() {
+  const w = guideCanvas.width / (window.devicePixelRatio || 1);
+  const h = guideCanvas.height / (window.devicePixelRatio || 1);
+  gCtx.clearRect(0, 0, w, h);
+  if (!guideVisible || filteredData.length === 0) return;
+  const item = filteredData[writeIndex];
+  gCtx.save();
+  gCtx.globalAlpha = 0.18;
+  gCtx.fillStyle = '#ffffff';
+  gCtx.textAlign = 'center';
+  gCtx.textBaseline = 'middle';
+  gCtx.font = `${Math.min(w, h) * 0.75}px "Hiragino Sans", "Noto Sans JP", sans-serif`;
+  gCtx.fillText(item.kana, w / 2, h / 2);
+  gCtx.globalAlpha = 0.12;
+  gCtx.strokeStyle = '#ffffff';
+  gCtx.lineWidth = 1;
+  gCtx.beginPath();
+  gCtx.moveTo(w / 2, 0); gCtx.lineTo(w / 2, h);
+  gCtx.moveTo(0, h / 2); gCtx.lineTo(w, h / 2);
+  gCtx.stroke();
+  gCtx.restore();
+}
+function renderWrite() {
+  if (filteredData.length === 0) return;
+  if (writeIndex >= filteredData.length) writeIndex = 0;
+  const item = filteredData[writeIndex];
+  writeProgress.textContent = `${writeIndex + 1} / ${filteredData.length} · ${item.group}`;
+  writeRomaji.textContent = item.romaji;
+  writeExHint.textContent = `例：${item.word}（${item.reading}）${item.meaning}`;
+  btnPrevWrite.style.opacity = writeIndex === 0 ? 0.4 : 1;
+  btnNextWrite.style.opacity = writeIndex === filteredData.length - 1 ? 0.4 : 1;
+  clearCanvas();
+  redrawGuide();
+}
+function clearCanvas() {
+  const w = drawCanvas.width / (window.devicePixelRatio || 1);
+  const h = drawCanvas.height / (window.devicePixelRatio || 1);
+  dCtx.clearRect(0, 0, w, h);
+}
+function getPos(e) {
+  const rect = drawCanvas.getBoundingClientRect();
+  const touch = e.touches ? e.touches[0] : e;
+  return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+}
+function startDraw(e) {
+  e.preventDefault();
+  drawing = true;
+  const p = getPos(e);
+  lastX = p.x; lastY = p.y;
+  dCtx.beginPath();
+  dCtx.moveTo(p.x, p.y);
+  dCtx.lineTo(p.x + 0.1, p.y + 0.1);
+  dCtx.stroke();
+}
+function moveDraw(e) {
+  if (!drawing) return;
+  e.preventDefault();
+  const p = getPos(e);
+  dCtx.beginPath();
+  dCtx.moveTo(lastX, lastY);
+  dCtx.lineTo(p.x, p.y);
+  dCtx.stroke();
+  lastX = p.x; lastY = p.y;
+}
+function endDraw(e) {
+  if (!drawing) return;
+  e.preventDefault();
+  drawing = false;
+}
+drawCanvas.addEventListener('touchstart', startDraw, { passive: false });
+drawCanvas.addEventListener('touchmove', moveDraw, { passive: false });
+drawCanvas.addEventListener('touchend', endDraw, { passive: false });
+drawCanvas.addEventListener('touchcancel', endDraw, { passive: false });
+drawCanvas.addEventListener('mousedown', startDraw);
+drawCanvas.addEventListener('mousemove', moveDraw);
+drawCanvas.addEventListener('mouseup', endDraw);
+drawCanvas.addEventListener('mouseleave', endDraw);
+
+btnClear.addEventListener('click', clearCanvas);
+btnGuide.addEventListener('click', () => {
+  guideVisible = !guideVisible;
+  btnGuide.classList.toggle('on', guideVisible);
+  btnGuide.textContent = guideVisible ? '👁 隱藏正解' : '👁 顯示正解';
+  redrawGuide();
+});
+btnPlayWrite.addEventListener('click', () => speak(filteredData[writeIndex].kana));
+btnPrevWrite.addEventListener('click', () => { if (writeIndex > 0) { writeIndex--; renderWrite(); } });
+btnNextWrite.addEventListener('click', () => {
+  if (shuffleMode) writeIndex = Math.floor(Math.random() * filteredData.length);
+  else if (writeIndex < filteredData.length - 1) writeIndex++;
+  renderWrite();
+});
+
+// ====== 測驗模式 ======
+let quizItem = null;
+let quizAnswered = false;
+let correctCount = 0, wrongCount = 0, streak = 0;
+let wrongSet = new Map();
+let retryMode = false;
+let retryPool = [];
+
+function pickRandom(arr, n, exclude) {
+  return arr.filter(x => x.kana !== exclude.kana).sort(() => Math.random() - 0.5).slice(0, n);
+}
+function getQuizPool() {
+  if (retryMode && retryPool.length > 0) return retryPool;
+  return filteredData;
+}
+function newQuiz() {
+  const pool = getQuizPool();
+  if (pool.length < 4) return;
+  quizAnswered = false;
+  quizFeedback.textContent = '';
+  quizFeedback.className = 'feedback';
+  quizItem = pool[Math.floor(Math.random() * pool.length)];
+  quizKana.textContent = quizItem.kana;
+  quizType.textContent = `${quizItem.type} · ${quizItem.group}`;
+  const options = [quizItem, ...pickRandom(pool, 3, quizItem)].sort(() => Math.random() - 0.5);
+  quizOptions.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.textContent = opt.romaji;
+    btn.dataset.romaji = opt.romaji;
+    btn.addEventListener('click', () => handleAnswer(btn, opt));
+    quizOptions.appendChild(btn);
+  });
+}
+function handleAnswer(btn, opt) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  quizOptions.querySelectorAll('button').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.romaji === quizItem.romaji) b.classList.add('correct');
+  });
+  if (opt.romaji === quizItem.romaji) {
+    correctCount++; streak++;
+    quizFeedback.textContent = '✅ 正確！';
+    quizFeedback.className = 'feedback ok';
+  } else {
+    wrongCount++; streak = 0;
+    btn.classList.add('wrong');
+    quizFeedback.textContent = `❌ 正確答案是「${quizItem.romaji}」`;
+    quizFeedback.className = 'feedback no';
+    if (!wrongSet.has(quizItem.kana)) wrongSet.set(quizItem.kana, { item: quizItem, count: 0 });
+    wrongSet.get(quizItem.kana).count++;
+    renderWrongList();
+  }
+  scoreCorrectEl.textContent = correctCount;
+  scoreWrongEl.textContent = wrongCount;
+  scoreStreakEl.textContent = streak;
+  setTimeout(newQuiz, 1200);
+}
+function renderWrongList() {
+  wrongCountEl.textContent = wrongSet.size;
+  wrongListEl.innerHTML = '';
+  if (wrongSet.size === 0) {
+    wrongListEl.innerHTML = '<div class="empty-hint">目前沒有錯題，繼續加油！</div>';
+    btnRetryWrong.disabled = true;
+    return;
+  }
+  btnRetryWrong.disabled = false;
+  wrongSet.forEach(({ item, count }) => {
+    const chip = document.createElement('div');
+    chip.className = 'wrong-chip';
+    chip.innerHTML = `<span>${item.kana}</span><span class="chip-romaji">${item.romaji}×${count}</span>`;
+    chip.addEventListener('click', () => speak(item.kana));
+    wrongListEl.appendChild(chip);
+  });
+}
+btnRetryWrong.addEventListener('click', () => {
+  if (wrongSet.size < 4) {
+    alert('錯題少於 4 個，無法進行四選一測驗。請先繼續練習累積錯題。');
+    return;
+  }
+  retryMode = true;
+  retryPool = Array.from(wrongSet.values()).map(v => v.item);
+  correctCount = 0; wrongCount = 0; streak = 0;
+  scoreCorrectEl.textContent = '0';
+  scoreWrongEl.textContent = '0';
+  scoreStreakEl.textContent = '0';
+  newQuiz();
+  quizFeedback.textContent = '🔁 錯題重練中';
+  quizFeedback.className = 'feedback';
+});
+function exitRetryMode() { retryMode = false; retryPool = []; }
+btnPlayQuiz.addEventListener('click', () => { if (quizItem) speak(quizItem.kana); });
+
+// ====== 發音表 ======
+let tableType = '平假名';   // 平假名 / 片假名
+let tableSection = 'seion'; // seion / dakuon / yoon
+
+// 表格結構定義
+const TABLE_LAYOUT = {
+  seion: {
+    title: '清音（五十音）',
+    headers: ['a', 'i', 'u', 'e', 'o'],
+    rows: [
+      { label: 'あ行', keys: ['あ','い','う','え','お'] },
+      { label: 'か行', keys: ['か','き','く','け','こ'] },
+      { label: 'さ行', keys: ['さ','し','す','せ','そ'] },
+      { label: 'た行', keys: ['た','ち','つ','て','と'] },
+      { label: 'な行', keys: ['な','に','ぬ','ね','の'] },
+      { label: 'は行', keys: ['は','ひ','ふ','へ','ほ'] },
+      { label: 'ま行', keys: ['ま','み','む','め','も'] },
+      { label: 'や行', keys: ['や','','ゆ','','よ'] },
+      { label: 'ら行', keys: ['ら','り','る','れ','ろ'] },
+      { label: 'わ行', keys: ['わ','','','','を'] },
+      { label: 'ん',   keys: ['ん','','','',''] }
+    ]
+  },
+  dakuon: {
+    title: '濁音・半濁音',
+    headers: ['a', 'i', 'u', 'e', 'o'],
+    rows: [
+      { label: 'が行', keys: ['が','ぎ','ぐ','げ','ご'] },
+      { label: 'ざ行', keys: ['ざ','じ','ず','ぜ','ぞ'] },
+      { label: 'だ行', keys: ['だ','ぢ','づ','で','ど'] },
+      { label: 'ば行', keys: ['ば','び','ぶ','べ','ぼ'] },
+      { label: 'ぱ行', keys: ['ぱ','ぴ','ぷ','ぺ','ぽ'] }
+    ]
+  },
+  yoon: {
+    title: '拗音',
+    headers: ['ya', 'yu', 'yo'],
+    rows: [
+      { label: 'き', keys: ['きゃ','きゅ','きょ'] },
+      { label: 'し', keys: ['しゃ','しゅ','しょ'] },
+      { label: 'ち', keys: ['ちゃ','ちゅ','ちょ'] },
+      { label: 'に', keys: ['にゃ','にゅ','にょ'] },
+      { label: 'ひ', keys: ['ひゃ','ひゅ','ひょ'] },
+      { label: 'み', keys: ['みゃ','みゅ','みょ'] },
+      { label: 'り', keys: ['りゃ','りゅ','りょ'] },
+      { label: 'ぎ', keys: ['ぎゃ','ぎゅ','ぎょ'] },
+      { label: 'じ', keys: ['じゃ','じゅ','じょ'] },
+      { label: 'び', keys: ['びゃ','びゅ','びょ'] },
+      { label: 'ぴ', keys: ['ぴゃ','ぴゅ','ぴょ'] }
+    ]
+  }
+};
+
+// 平假名 → 片假名對照（用於切換）
+const HIRA_TO_KATA = {
+  'あ':'ア','い':'イ','う':'ウ','え':'エ','お':'オ',
+  'か':'カ','き':'キ','く':'ク','け':'ケ','こ':'コ',
+  'さ':'サ','し':'シ','す':'ス','せ':'セ','そ':'ソ',
+  'た':'タ','ち':'チ','つ':'ツ','て':'テ','と':'ト',
+  'な':'ナ','に':'ニ','ぬ':'ヌ','ね':'ネ','の':'ノ',
+  'は':'ハ','ひ':'ヒ','ふ':'フ','へ':'ヘ','ほ':'ホ',
+  'ま':'マ','み':'ミ','む':'ム','め':'メ','も':'モ',
+  'や':'ヤ','ゆ':'ユ','よ':'ヨ',
+  'ら':'ラ','り':'リ','る':'ル','れ':'レ','ろ':'ロ',
+  'わ':'ワ','を':'ヲ','ん':'ン',
+  'が':'ガ','ぎ':'ギ','ぐ':'グ','げ':'ゲ','ご':'ゴ',
+  'ざ':'ザ','じ':'ジ','ず':'ズ','ぜ':'ゼ','ぞ':'ゾ',
+  'だ':'ダ','ぢ':'ヂ','づ':'ヅ','で':'デ','ど':'ド',
+  'ば':'バ','び':'ビ','ぶ':'ブ','べ':'ベ','ぼ':'ボ',
+  'ぱ':'パ','ぴ':'ピ','ぷ':'プ','ぺ':'ペ','ぽ':'ポ'
+};
+// 拗音對照
+const YOON_TO_KATA = {
+  'きゃ':'キャ','きゅ':'キュ','きょ':'キョ',
+  'しゃ':'シャ','しゅ':'シュ','しょ':'ショ',
+  'ちゃ':'チャ','ちゅ':'チュ','ちょ':'チョ',
+  'にゃ':'ニャ','にゅ':'ニュ','にょ':'ニョ',
+  'ひゃ':'ヒャ','ひゅ':'ヒュ','ひょ':'ヒョ',
+  'みゃ':'ミャ','みゅ':'ミュ','みょ':'ミョ',
+  'りゃ':'リャ','りゅ':'リュ','りょ':'リョ',
+  'ぎゃ':'ギャ','ぎゅ':'ギュ','ぎょ':'ギョ',
+  'じゃ':'ジャ','じゅ':'ジュ','じょ':'ジョ',
+  'びゃ':'ビャ','びゅ':'ビュ','びょ':'ビョ',
+  'ぴゃ':'ピャ','ぴゅ':'ピュ','ぴょ':'ピョ'
+};
+
+// 建立查表用的 Map：kana → item
+const kanaMap = new Map();
+kanaData.forEach(item => kanaMap.set(item.kana, item));
+
+function toKatakana(kana) {
+  if (HIRA_TO_KATA[kana]) return HIRA_TO_KATA[kana];
+  if (YOON_TO_KATA[kana]) return YOON_TO_KATA[kana];
+  return kana;
+}
+
+function renderTable() {
+  const layout = TABLE_LAYOUT[tableSection];
+  const container = document.getElementById('tableContainer');
+  const isKata = tableType === '片假名';
+
+  let html = `<table class="kana-table">`;
+
+  // 表頭
+  html += `<tr><th class="row-label"></th>`;
+  layout.headers.forEach(h => { html += `<th>${h}</th>`; });
+  html += `</tr>`;
+
+  // 每一行
+  layout.rows.forEach(row => {
+    html += `<tr>`;
+    html += `<td class="row-label">${isKata ? toKatakana(row.label.replace('行','')) + '行' : row.label}</td>`;
+    row.keys.forEach(k => {
+      if (!k) {
+        html += `<td class="empty"></td>`;
+        return;
+      }
+      const displayKana = isKata ? toKatakana(k) : k;
+      const item = kanaMap.get(k);
+      const romaji = item ? item.romaji : '';
+      html += `<td data-kana="${displayKana}">
+        <div class="cell-kana">${displayKana}</div>
+        <div class="cell-romaji">${romaji}</div>
+      </td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</table>`;
+  container.innerHTML = html;
+
+  // 綁定點擊事件
+  container.querySelectorAll('td[data-kana]').forEach(td => {
+    td.addEventListener('click', () => speak(td.dataset.kana));
+  });
+}
+
+document.getElementById('tabHiragana').addEventListener('click', () => {
+  tableType = '平假名';
+  document.getElementById('tabHiragana').classList.add('active');
+  document.getElementById('tabKatakana').classList.remove('active');
+  renderTable();
+});
+document.getElementById('tabKatakana').addEventListener('click', () => {
+  tableType = '片假名';
+  document.getElementById('tabKatakana').classList.add('active');
+  document.getElementById('tabHiragana').classList.remove('active');
+  renderTable();
+});
+document.querySelectorAll('.table-tabs button.sub').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.table-tabs button.sub').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    tableSection = btn.dataset.section;
+    renderTable();
+  });
+});
+
+// ====== 模式切換 ======
+function switchMode(mode) {
+  [modeLearn, modeWrite, modeQuiz, modeTable].forEach(b => b.classList.remove('active'));
+  [learnPanel, writePanel, quizPanel, tablePanel].forEach(p => p.classList.add('hidden'));
+  filterBar.style.display = mode === 'table' ? 'none' : 'flex';
+  toolBar.style.display = mode === 'table' ? 'none' : 'flex';
+
+  if (mode !== 'quiz') exitRetryMode();
+  if (mode === 'learn') {
+    modeLearn.classList.add('active');
+    learnPanel.classList.remove('hidden');
+    renderLearn();
+  } else if (mode === 'write') {
+    modeWrite.classList.add('active');
+    writePanel.classList.remove('hidden');
+    requestAnimationFrame(() => { resizeCanvas(); renderWrite(); });
+  } else if (mode === 'quiz') {
+    modeQuiz.classList.add('active');
+    quizPanel.classList.remove('hidden');
+    correctCount = wrongCount = streak = 0;
+    scoreCorrectEl.textContent = '0';
+    scoreWrongEl.textContent = '0';
+    scoreStreakEl.textContent = '0';
+    newQuiz();
+  } else {
+    modeTable.classList.add('active');
+    tablePanel.classList.remove('hidden');
+    renderTable();
+  }
+}
+modeLearn.addEventListener('click', () => switchMode('learn'));
+modeWrite.addEventListener('click', () => switchMode('write'));
+modeQuiz.addEventListener('click', () => switchMode('quiz'));
+modeTable.addEventListener('click', () => switchMode('table'));
+
+window.addEventListener('resize', () => {
+  if (!writePanel.classList.contains('hidden')) { resizeCanvas(); renderWrite(); }
+});
+
+renderLearn();
+renderWrongList();
+</script>
+</body>
+</html>
